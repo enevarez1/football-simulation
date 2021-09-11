@@ -14,9 +14,89 @@ class TestGameObserver(unittest.TestCase):
 
     def test_down_change(self):
         gameObserver = GameObserver()
-        gameObserver.run_play()
-        assert gameObserver.down == 2
-        assert gameObserver.yards ==
+
+    def test_quarter_change(self):
+        gameObserver = GameObserver()
+
+    def test_end_game(self):
+        gameObserver = GameObserver()
+
+    def test_process_play_first_down(self):
+        """Getting a first down"""
+        gameObserver = GameObserver()
+        gameObserver.down = 3
+        gameObserver.yardsToGo = 6
+        pr = PlayOutcome()
+        pr.yardsGained = 11
+        gameObserver.process_play(pr)
+        assert gameObserver.down == 1
+        assert gameObserver.yardsToGo == 10
+
+    def test_process_play_any_down_not_enough_yards(self):
+        """Gaining yards not First Down"""
+        gameObserver = GameObserver()
+        gameObserver.down = 2
+        gameObserver.yardsToGo = 6
+        pr = PlayOutcome()
+        pr.yardsGained = 4
+        gameObserver.process_play(pr)
+        assert gameObserver.down == 3
+        assert gameObserver.yardsToGo == 2
+
+    def test_process_play_any_down_lost_yards(self):
+        """Getting a first down"""
+        gameObserver = GameObserver()
+        gameObserver.down = 2
+        gameObserver.yardsToGo = 6
+        pr = PlayOutcome()
+        pr.yardsGained = -4
+        gameObserver.process_play(pr)
+        assert gameObserver.down == 3
+        assert gameObserver.yardsToGo == 10
+
+    def test_process_play_turnover_on_downs(self):
+        """Turnover on downs"""
+        gameObserver = GameObserver()
+        gameObserver.down = 4
+        gameObserver.yardsToGo = 6
+        pr = PlayOutcome()
+        pr.yardsGained = 5
+        gameObserver.process_play(pr)
+        assert gameObserver.down == 1
+        assert gameObserver.yardsToGo == 10
+        self.assertFalse(gameObserver.possession)
+
+    def test_process_clock(self):
+        """Clock Processing"""
+        gameObserver = GameObserver()
+        gameObserver.process_clock(6)
+        assert gameObserver.Clock.minutes == 14
+        assert gameObserver.Clock.seconds == 54
+        assert gameObserver.quarter == 1
+
+    def test_process_clock_quarter_change(self):
+        """Quarter Changing"""
+        gameObserver = GameObserver()
+        gameObserver.Clock.minutes = 0
+        gameObserver.Clock.seconds = 5
+        gameObserver.process_clock(6)
+        assert gameObserver.Clock.minutes == 15
+        assert gameObserver.Clock.seconds == 0
+        assert gameObserver.quarter == 2
+
+    def test_process_clock_end_game(self):
+        """Quarter Changing"""
+        gameObserver = GameObserver()
+        gameObserver.quarter = 4
+        gameObserver.Clock.minutes = 0
+        gameObserver.Clock.seconds = 5
+        gameObserver.process_clock(6)
+        self.assertTrue(gameObserver.endGame)
+
+
+
+
+
 
 class TestPlayOutcome(unittest.TestCase):
 
