@@ -5,6 +5,7 @@ from enum import Enum
 class GameObserver:
     def __init__(self):
         self.Clock = Clock()
+        self.Field = Field()
         self.quarter = 1
         self.possession = True  # true(home)/false(away)
         self.homeScore = 0
@@ -17,7 +18,6 @@ class GameObserver:
     def run_game(self):
         while not self.endGame:
             self.run_play()
-            self.process_play()
 
     def run_play(self):
         play_outcome = PlayOutcome()
@@ -41,6 +41,7 @@ class GameObserver:
             self.down += 1
             self.yardsToGo = self.yardsToGo - PlayOutcome.yardsGained
 
+        self.Field.process_yards(PlayOutcome.yardsGained)
         self.process_clock(PlayOutcome.timeUsed)
 
     def process_clock(self, time_used):
@@ -59,7 +60,7 @@ class PlayOutcome:
         self.prevYards = 0
 
     def determine_yards_gained(self):
-        self.yardsGained = random.randint(1, 10)
+        self.yardsGained = random.randint(-10, 10)
 
     def determine_play_called(self):
         temp = random.randint(0, 1)
@@ -110,8 +111,10 @@ class Penalty(Enum):
 class Field:
 
     def __init__(self):
-        self.side = "None"  # Could be None(50), Own, and OPP
+        self.side = "None"  # Could be None(50), Own, and Opp
         self.yard = 50
+        self.safetyFlag = False
+        self.touchdownFlag = False
 
     def process_yards(self, result_yards):
 
@@ -127,8 +130,14 @@ class Field:
             elif self.side == "Own":
                 self.side = "Opp"
             self.yard = 50 - (self.yard - 50)
+            print(self.yard)
         elif self.yard == 50:
             self.side = "None"
+        if self.yard <= 0:
+            if result_yards > 0:
+                self.touchdownFlag = True
+            else:
+                self.safetyFlag = True
 
 
 class Clock:
@@ -145,12 +154,11 @@ class Clock:
     def tickDown(self, secondsToRemove):
         self.seconds -= secondsToRemove
 
-        if (self.seconds < 0):
-            temp = 0 - self.seconds
-            self.seconds = 60 - temp
+        if self.seconds < 0:
+            self.seconds = 60 - (0 - self.seconds)
             self.minutes -= 1
 
-        if (self.minutes < 0):
+        if self.minutes < 0:
             return self.newQuarter()
         else:
             return False

@@ -13,16 +13,16 @@ def checkTickFunction(clock, value, expectedMinVal, expectedSecVal, quarterFlagE
 class TestGameObserver(unittest.TestCase):
 
     def test_quarter_change(self):
-        gameObserver = GameObserver()
-        gameObserver.Clock.minutes = 0
-        gameObserver.Clock.seconds = 4
-        gameObserver.quarter = 1
-        gameObserver.down = 3
-        gameObserver.yardsToGo = 6
+        game_observer = GameObserver()
+        game_observer.Clock.minutes = 0
+        game_observer.Clock.seconds = 4
+        game_observer.quarter = 1
+        game_observer.down = 3
+        game_observer.yardsToGo = 6
         pr = PlayOutcome()
         pr.timeUsed = 5
-        gameObserver.process_play(pr)
-        assert gameObserver.quarter == 2
+        game_observer.process_play(pr)
+        assert game_observer.quarter == 2
 
     def test_end_game(self):
         gameObserver = GameObserver()
@@ -38,95 +38,95 @@ class TestGameObserver(unittest.TestCase):
 
     def test_process_play_first_down(self):
         """Getting a first down"""
-        gameObserver = GameObserver()
-        gameObserver.down = 3
-        gameObserver.yardsToGo = 6
+        game_observer = GameObserver()
+        game_observer.down = 3
+        game_observer.yardsToGo = 6
+        game_observer.Field.yard = 25
+        game_observer.Field.side = "Own"
         pr = PlayOutcome()
         pr.yardsGained = 11
-        gameObserver.process_play(pr)
-        assert gameObserver.down == 1
-        assert gameObserver.yardsToGo == 10
+        game_observer.process_play(pr)
+
+        assert game_observer.down == 1
+        assert game_observer.yardsToGo == 10
+        assert game_observer.Field.side == "Own"
+        assert game_observer.Field.yard == 36
 
     def test_process_play_any_down_not_enough_yards(self):
         """Gaining yards not First Down"""
-        gameObserver = GameObserver()
-        gameObserver.down = 2
-        gameObserver.yardsToGo = 6
+        game_observer = GameObserver()
+        game_observer.down = 2
+        game_observer.yardsToGo = 6
         pr = PlayOutcome()
         pr.yardsGained = 4
-        gameObserver.process_play(pr)
-        assert gameObserver.down == 3
-        assert gameObserver.yardsToGo == 2
+        game_observer.process_play(pr)
+        assert game_observer.down == 3
+        assert game_observer.yardsToGo == 2
 
     def test_process_play_any_down_lost_yards(self):
         """Getting a first down"""
-        gameObserver = GameObserver()
-        gameObserver.down = 2
-        gameObserver.yardsToGo = 6
+        game_observer = GameObserver()
+        game_observer.down = 2
+        game_observer.yardsToGo = 6
         pr = PlayOutcome()
         pr.yardsGained = -4
-        gameObserver.process_play(pr)
-        assert gameObserver.down == 3
-        assert gameObserver.yardsToGo == 10
+        game_observer.process_play(pr)
+        assert game_observer.down == 3
+        assert game_observer.yardsToGo == 10
 
     def test_process_play_turnover_on_downs(self):
         """Turnover on downs"""
-        gameObserver = GameObserver()
-        gameObserver.down = 4
-        gameObserver.yardsToGo = 6
+        game_observer = GameObserver()
+        game_observer.down = 4
+        game_observer.yardsToGo = 6
         pr = PlayOutcome()
         pr.yardsGained = 5
-        gameObserver.process_play(pr)
-        assert gameObserver.down == 1
-        assert gameObserver.yardsToGo == 10
-        self.assertFalse(gameObserver.possession)
+        game_observer.process_play(pr)
+        assert game_observer.down == 1
+        assert game_observer.yardsToGo == 10
+        self.assertFalse(game_observer.possession)
 
     def test_process_clock(self):
         """Clock Processing"""
-        gameObserver = GameObserver()
-        gameObserver.process_clock(6)
-        assert gameObserver.Clock.minutes == 14
-        assert gameObserver.Clock.seconds == 54
-        assert gameObserver.quarter == 1
+        game_observer = GameObserver()
+        game_observer.process_clock(6)
+        assert game_observer.Clock.minutes == 14
+        assert game_observer.Clock.seconds == 54
+        assert game_observer.quarter == 1
 
     def test_process_clock_quarter_change(self):
         """Quarter Changing"""
-        gameObserver = GameObserver()
-        gameObserver.Clock.minutes = 0
-        gameObserver.Clock.seconds = 5
-        gameObserver.process_clock(6)
-        assert gameObserver.Clock.minutes == 15
-        assert gameObserver.Clock.seconds == 0
-        assert gameObserver.quarter == 2
+        game_observer = GameObserver()
+        game_observer.Clock.minutes = 0
+        game_observer.Clock.seconds = 5
+        game_observer.process_clock(6)
+        assert game_observer.Clock.minutes == 15
+        assert game_observer.Clock.seconds == 0
+        assert game_observer.quarter == 2
 
     def test_process_clock_end_game(self):
         """End Game"""
-        gameObserver = GameObserver()
-        gameObserver.quarter = 4
-        gameObserver.Clock.minutes = 0
-        gameObserver.Clock.seconds = 5
-        gameObserver.process_clock(6)
-        self.assertTrue(gameObserver.endGame)
-
-
-
-
+        game_observer = GameObserver()
+        game_observer.quarter = 4
+        game_observer.Clock.minutes = 0
+        game_observer.Clock.seconds = 5
+        game_observer.process_clock(6)
+        self.assertTrue(game_observer.endGame)
 
 
 class TestPlayOutcome(unittest.TestCase):
 
     def test_play_outcome_init(self):
-        playOutcome = PlayOutcome()
-        assert playOutcome.timeUsed == 0
-        assert playOutcome.yardsGained == 0
-        assert playOutcome.playCall == ''
-        assert playOutcome.prevYards == 0
-
+        play_outcome = PlayOutcome()
+        assert play_outcome.timeUsed == 0
+        assert play_outcome.yardsGained == 0
+        assert play_outcome.playCall == ''
+        assert play_outcome.prevYards == 0
 
     def test_determine_yards_gained(self):
         temp = PlayOutcome()
         temp.determine_yards_gained()
-        self.assertTrue(1 <= temp.yardsGained <= 10)
+        self.assertTrue(-10 <= temp.yardsGained <= 10)
 
     def test_determine_play_called(self):
         temp = PlayOutcome()
@@ -137,6 +137,7 @@ class TestPlayOutcome(unittest.TestCase):
         temp = PlayOutcome()
         temp.determine_time_used()
         self.assertTrue(1 <= temp.timeUsed <= 10)
+
 
 class TestField(unittest.TestCase):
 
@@ -202,6 +203,38 @@ class TestField(unittest.TestCase):
 
         assert field.side == 'None'
         assert field.yard == 50
+
+    def test_touchdown_flag_opp(self):
+        field = Field()
+        field.side = 'Opp'
+        field.yard = 30
+        field.process_yards(30)
+
+        self.assertTrue(field.touchdownFlag)
+
+    def test_touchdown_flag_own(self):
+        field = Field()
+        field.side = 'Own'
+        field.yard = 30
+        field.process_yards(70)
+
+        self.assertTrue(field.touchdownFlag)
+
+    def test_safety_flag_opp(self):
+        field = Field()
+        field.side = 'Opp'
+        field.yard = 30
+        field.process_yards(-70)
+
+        self.assertTrue(field.safetyFlag)
+
+    def test_safety_flag_own(self):
+        field = Field()
+        field.side = 'Own'
+        field.yard = 30
+        field.process_yards(-30)
+
+        self.assertTrue(field.safetyFlag)
 
 
 class TestClock(unittest.TestCase):
