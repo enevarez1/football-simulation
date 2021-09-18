@@ -6,7 +6,7 @@ class GameObserver:
     def __init__(self):
         self.Clock = Clock()
         self.quarter = 1
-        self.possession = True #true(home)/false(away)
+        self.possession = True  # true(home)/false(away)
         self.homeScore = 0
         self.awayScore = 0
         self.down = 1
@@ -50,6 +50,7 @@ class GameObserver:
         if self.quarter > 4:
             self.endGame = True
 
+
 class PlayOutcome:
     def __init__(self):
         self.timeUsed = 0
@@ -76,8 +77,6 @@ class PlayOutcome:
         self.determine_time_used()
 
 
-
-
 class Result(Enum):
     COMPLETION = 'COMPLETION'
     INCOMPLETION = 'INCOMPLETION'
@@ -85,7 +84,7 @@ class Result(Enum):
     FUMBLE = 'FUMBLE'
     FUMBLE_SACK = 'FUMBLE_SACK'
     FUMBLE_LOSS = 'FUMBLE_LOSS'
-    INTERCEPTION =  'INTERCEPTION'
+    INTERCEPTION = 'INTERCEPTION'
     SACK = 'SACK'
     PASS_DEFLECTION = 'PASS_DEFLECTION'
     RUSH_FOR_LOSS = 'RUSH_FOR_LOSS'
@@ -108,6 +107,30 @@ class Penalty(Enum):
     ILLEGAL_HANDS = 'ILLEGAL_HANDS'
 
 
+class Field:
+
+    def __init__(self):
+        self.side = "None"  # Could be None(50), Own, and OPP
+        self.yard = 50
+
+    def process_yards(self, result_yards):
+
+        if self.side == "Own":
+            self.yard += result_yards
+
+        if self.side == "Opp":
+            self.yard -= result_yards
+
+        if self.yard > 50:
+            if self.side == "Opp":
+                self.side = "Own"
+            elif self.side == "Own":
+                self.side = "Opp"
+            self.yard = 50 - (self.yard - 50)
+        elif self.yard == 50:
+            self.side = "None"
+
+
 class Clock:
 
     def __init__(self):
@@ -122,18 +145,12 @@ class Clock:
     def tickDown(self, secondsToRemove):
         self.seconds -= secondsToRemove
 
-        if(self.seconds < 0):
+        if (self.seconds < 0):
             temp = 0 - self.seconds
             self.seconds = 60 - temp
             self.minutes -= 1
 
-        if(self.minutes < 0):
-             return self.newQuarter()
+        if (self.minutes < 0):
+            return self.newQuarter()
         else:
             return False
-
-
-
-
-
-

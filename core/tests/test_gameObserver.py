@@ -1,6 +1,6 @@
 import unittest
 
-from core.gameObserver import Clock, PlayOutcome, GameObserver
+from core.gameObserver import Clock, PlayOutcome, GameObserver, Field
 
 
 def checkTickFunction(clock, value, expectedMinVal, expectedSecVal, quarterFlagExp):
@@ -12,14 +12,29 @@ def checkTickFunction(clock, value, expectedMinVal, expectedSecVal, quarterFlagE
 
 class TestGameObserver(unittest.TestCase):
 
-    def test_down_change(self):
-        gameObserver = GameObserver()
-
     def test_quarter_change(self):
         gameObserver = GameObserver()
+        gameObserver.Clock.minutes = 0
+        gameObserver.Clock.seconds = 4
+        gameObserver.quarter = 1
+        gameObserver.down = 3
+        gameObserver.yardsToGo = 6
+        pr = PlayOutcome()
+        pr.timeUsed = 5
+        gameObserver.process_play(pr)
+        assert gameObserver.quarter == 2
 
     def test_end_game(self):
         gameObserver = GameObserver()
+        gameObserver.Clock.minutes = 0
+        gameObserver.Clock.seconds = 4
+        gameObserver.quarter = 4
+        gameObserver.down = 3
+        gameObserver.yardsToGo = 6
+        pr = PlayOutcome()
+        pr.timeUsed = 5
+        gameObserver.process_play(pr)
+        self.assertTrue(gameObserver.endGame)
 
     def test_process_play_first_down(self):
         """Getting a first down"""
@@ -85,7 +100,7 @@ class TestGameObserver(unittest.TestCase):
         assert gameObserver.quarter == 2
 
     def test_process_clock_end_game(self):
-        """Quarter Changing"""
+        """End Game"""
         gameObserver = GameObserver()
         gameObserver.quarter = 4
         gameObserver.Clock.minutes = 0
@@ -122,6 +137,71 @@ class TestPlayOutcome(unittest.TestCase):
         temp = PlayOutcome()
         temp.determine_time_used()
         self.assertTrue(1 <= temp.timeUsed <= 10)
+
+class TestField(unittest.TestCase):
+
+    def test_own_yardage_gain(self):
+        field = Field()
+        field.side = 'Own'
+        field.yard = 25
+        field.process_yards(10)
+
+        assert field.side == 'Own'
+        assert field.yard == 35
+
+    def test_opp_yardage_gain(self):
+        field = Field()
+        field.side = 'Opp'
+        field.yard = 25
+        field.process_yards(10)
+
+        assert field.side == 'Opp'
+        assert field.yard == 15
+
+    def test_own_yardage_loss(self):
+        field = Field()
+        field.side = 'Own'
+        field.yard = 25
+        field.process_yards(-10)
+
+        assert field.side == 'Own'
+        assert field.yard == 15
+
+    def test_opp_yardage_loss(self):
+        field = Field()
+        field.side = 'Opp'
+        field.yard = 25
+        field.process_yards(-10)
+
+        assert field.side == 'Opp'
+        assert field.yard == 35
+
+    def test_own_yardage_gain_across_50(self):
+        field = Field()
+        field.side = 'Own'
+        field.yard = 45
+        field.process_yards(10)
+
+        assert field.side == 'Opp'
+        assert field.yard == 45
+
+    def test_opp_yardage_loss_across_50(self):
+        field = Field()
+        field.side = 'Opp'
+        field.yard = 45
+        field.process_yards(-10)
+
+        assert field.side == 'Own'
+        assert field.yard == 45
+
+    def test_yardage_land_on_50(self):
+        field = Field()
+        field.side = 'Own'
+        field.yard = 40
+        field.process_yards(10)
+
+        assert field.side == 'None'
+        assert field.yard == 50
 
 
 class TestClock(unittest.TestCase):
